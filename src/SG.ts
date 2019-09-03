@@ -88,11 +88,6 @@ export class Matrix {
     static makeRotationFromEuler (eu: Vector): Matrix {        
 	}
 
-    // not used in the example, but you might find it useful to implement this
-    // to make camera motion easier to control
-    static lookAt(eye: Vector, target: Vector, up: Vector): Matrix {
-    }
-    
     // create a new translation matrix from the input vector
     // t.x, t.y, t.z contain the translation values in each direction
     static makeTranslation(t: Vector): Matrix {
