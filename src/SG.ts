@@ -88,11 +88,6 @@ export class Matrix {
     static makeRotationFromEuler (eu: Vector): Matrix {        
 	}
 
-    // not used in the example, but you might find it useful to implement this
-    // to make camera motion easier to control
-    static lookAt(eye: Vector, target: Vector, up: Vector): Matrix {
-    }
-    
     // create a new translation matrix from the input vector
     // t.x, t.y, t.z contain the translation values in each direction
     static makeTranslation(t: Vector): Matrix {
@@ -232,7 +227,8 @@ export class Scene {
     private domElement: HTMLDivElement;
     private width: number;
     private height: number;
-                
+    private windowTransform: string;
+
     constructor(public container: HTMLDivElement) {
         this.world = new Thing();
         this.camera = null;
@@ -261,16 +257,20 @@ export class Scene {
         // CSS uses a weird +y is DOWN coordinate frame, so we're going to
         // scale by -1 in Y in each of the elements, and then undo that scale here.
         // By doing this, all of our transformations can by in the more common
-        // +1 is UP coordinate frame 
-        this.domElement.style.transform = "matrix3d(1,0,0,0, 0,-1,0,0, 0,0,1,0, 0,0,0,1)"; 
+        // +1 is UP coordinate frame.
+        // We'll also translate to the center of the viewport (CSS coords are now in the
+        // lower left)
+        this.windowTransform = "matrix3d(1,0,0,0, 0,-1,0,0, 0,0,1,0, 0,0,0,1)" +
+            " translate3d(" + this.width/2 + 'px, ' + this.height/2 + 'px, 0px)'; 
     }
     
     // convenience function provided so you don't have to fight with this peculiarity of CSS.  
-    // we invert Y here, as described above
+    // we invert Y here, as described above.  We also translate the DIV so it's center is
+    // at the origin instead of it's lower left corner.
     getObjectCSSMatrix( m: Matrix ): string {
 		var elements = m.elements;
 
-		return 'matrix3d(' +
+		return 'translate3d(-50%, -50%, 0) matrix3d(' +
 			epsilon( elements[ 0 ]  ) + ',' +
 			epsilon( elements[ 1 ]  ) + ',' +
 			epsilon( elements[ 2 ]  ) + ',' +
@@ -296,10 +296,11 @@ export class Scene {
     // - update all the Things' internal matrices
     // - update all the Things' worldTransforms
     // - find the Camera and save it, and figure out it's inverse transformation to the root
-    // - set the perspective on this.domElement from the focalLength, as follows (assuming
-    //   focallength is a number):
-    //         this.domElement.style.perspective 
-    //                = focalLength.toString() + "px";
+    // - set the perspective on this.container and add a translation to move the camera to it's origin, 
+    //   both based on the focalLength, as follows:
+    //      var focalLength = this.camera.getFocalLength(this.height).toString();
+    //      this.container.style.perspective = focalLength + "px";
+    //      this.domElement.style.transform = "translate3d(0px,0px," + focalLength + "px)" + this.windowTransform;
     // - for each object, figure out the entire transformation to that object
     //   (including the inverse camera transformation). 
     // - add the DIV's in the HTMLDivThings directly to this.domElement (do not use a

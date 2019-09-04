@@ -8,11 +8,12 @@ var s3 = new sg.Scene(<HTMLDivElement>document.getElementById("rotate-x"));
 var s4 = new sg.Scene(<HTMLDivElement>document.getElementById("rotate-y"));
 var s5 = new sg.Scene(<HTMLDivElement>document.getElementById("rotate-z"));
 
-var mt = sg.Matrix.makeTranslation(new sg.Vector(2,3,4));
-var mr = sg.Matrix.makeRotationFromEuler(new sg.Vector(90,0,0));
-var mm = mr.multiply(mt);
-console.log(mm.toString());
-
+var res1 = <HTMLDivElement>document.getElementById("result1");
+var res2 = <HTMLDivElement>document.getElementById("result2");
+var res3 = <HTMLDivElement>document.getElementById("result3");
+var res4 = <HTMLDivElement>document.getElementById("result4");
+var res5 = <HTMLDivElement>document.getElementById("result5");
+var res6 = <HTMLDivElement>document.getElementById("result6");
 
 ///////////////////////////////////
 // Scene 1.
@@ -36,6 +37,11 @@ s1.world.add(n1);
 // render this graph into the div container.
 s1.render()
 
+if (s1.camera) {
+	var m = s1.camera.worldInverseTransform.multiply(n1.worldTransform);              
+	res1.innerText = "n1 position = " + m.getPosition().toString();
+}
+
 ///////////////////////////////////
 // Scene 2
 //
@@ -54,6 +60,11 @@ s2.world.add(n2);
 
 s2.render();
 
+if (s2.camera) {
+	var m = s2.camera.worldInverseTransform.multiply(n2.worldTransform);              
+	res2.innerText = "n2 position = " + m.getPosition().toString();
+}
+
 ///////////////////////////////////
 // Scene 3
 //
@@ -71,6 +82,12 @@ n3.rotation = sg.Matrix.makeRotationFromEuler(new sg.Vector(35,0,0));
 s3.world.add(n3);
 
 s3.render();
+
+if (s3.camera) {
+	var m = s3.camera.worldInverseTransform.multiply(n3.worldTransform);
+	res3.innerText = "n3 matrix = " + n3.worldTransform.toString() + "\n" + 
+		"n3 worldMatrix = " + m.toString();
+}
 
 ///////////////////////////////////
 // Scene 4.  
@@ -114,6 +131,13 @@ n4.add(n4g);
 
 s4.render();
 
+if (s4.camera) {
+	var m = s4.camera.worldInverseTransform.multiply(n41.worldTransform);              
+	res4.innerText = "n4 matrix = " + n4.worldTransform.toString() + "\n" + 
+		"n41 matrix = " + n41.worldTransform.toString() + "\n" + 
+		"n41 worldMatrix = " + m.toString()
+}
+
 ///////////////////////////////////
 // Scene 5.  Till in Z, spin in X, and rotate the camera back and forth
 var cam5 = new sg.Camera(25);
@@ -131,6 +155,11 @@ s5.world.add(n5);
 var yRotation = 0;
 var camYRotation =12;
 var camYInc = 0.2;
+
+var str1 = "LEFT:\n\n";
+var str2 = "MIDDLE:\n\n";
+var str3 = "RIGHT:\n\n";
+
 var s5renderFunc = function() {
 	yRotation += 3;
 	if (yRotation > 360) {
@@ -146,6 +175,23 @@ var s5renderFunc = function() {
 	cam5.rotation = sg.Matrix.makeRotationFromEuler(new sg.Vector(0,camYRotation,0));
 	
 	s5.render();
+	
+	if (s5.camera) {
+		var m = s5.camera.worldInverseTransform.multiply(n5.worldTransform);              
+		if (camYRotation > 11 && str1.length < 20) {
+			str1 = "LEFT:\n n5 matrix = " + n5.worldTransform.toString() + "\n" + 
+				"n5 worldMatrix = " + m.toString() + "\n";
+			res5.innerText = str1 + str2 + str3;
+		} else if (camYRotation < -11 && str3.length < 20) {
+			str3 = "RIGHT:\n n5 matrix = " + n5.worldTransform.toString() + "\n" + 
+				"n5 worldMatrix = " + m.toString() + "\n" ;
+			res5.innerText = str1 + str2 + str3;
+		} else if (camYRotation > -0.1 && camYRotation < 0.1  && str2.length < 20) {
+			str2 = "MIDDLE:\n n5 matrix = " + n5.worldTransform.toString() + "\n" + 
+				"n5 worldMatrix = " + m.toString() + "\n";
+			res5.innerText = str1 + str2 + str3;
+		}
+	}
 	requestAnimationFrame(s5renderFunc);
 };
 s5renderFunc();
